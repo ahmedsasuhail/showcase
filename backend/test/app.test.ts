@@ -182,6 +182,23 @@ describe('GET /api/categories/:slug/products', () => {
   });
 });
 
+describe('unexpected errors', () => {
+  it('return a generic 500 without leaking the internal message', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const broken = new InMemoryProductSource();
+    broken.listCategories = async () => {
+      throw new Error('connection string postgres://admin:hunter2@db');
+    };
+
+    const res = await request(appWith(broken)).get('/api/categories');
+
+    expect(res.status).toBe(500);
+    expect(res.body).toEqual({ error: { code: 'internal_error', message: 'Something went wrong.' } });
+    expect(JSON.stringify(res.body)).not.toContain('hunter2');
+    expect(error).toHaveBeenCalled(); // still logged server-side for diagnosis
+  });
+});
+
 describe('unknown API routes', () => {
   it('return 404 in the standard error shape', async () => {
     const res = await request(appWith(new InMemoryProductSource())).get('/api/nope');

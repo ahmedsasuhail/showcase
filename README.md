@@ -82,7 +82,10 @@ Full structure and API contract: [PLAN.md](PLAN.md#structure).
 | Building | 70–75 |
 | Testing | 10–15 |
 | Reviewing | 20–25 |
-| **Total** | **150–175** |
+| Misc: light UI polish, code comments, one extra test | 15–20 |
+| **Total** | **165–195** |
+
+Slightly over the 2–3 hour time-box at the top end; most of the extra went into review and polish after the five criteria were working.
 
 ## Documents
 | File | Purpose |

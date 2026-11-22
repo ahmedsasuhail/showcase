@@ -16,6 +16,8 @@ type Settled<T> = { key: string; state: Exclude<ApiState<T>, { status: 'loading'
 export function useApi<T>(path: string) {
   const [attempt, setAttempt] = useState(0);
   const [settled, setSettled] = useState<Settled<T> | null>(null);
+  // Identifies one request. A retry bumps `attempt`, so the key changes and the effect runs again;
+  // a result stored under an older key is treated as stale and the hook reports "loading" instead.
   const key = `${attempt}:${path}`;
 
   useEffect(() => {

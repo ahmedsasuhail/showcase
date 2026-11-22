@@ -25,7 +25,10 @@ export function SearchForm() {
         value={term}
         onChange={(event) => setTerm(event.target.value)}
       />
-      <button type="submit">Search</button>
+      {/* Disabled until there is something to search for; handleSubmit still guards the Enter key. */}
+      <button type="submit" disabled={term.trim() === ''}>
+        Search
+      </button>
     </form>
   );
 }

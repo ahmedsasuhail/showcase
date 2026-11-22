@@ -20,6 +20,7 @@ const schema = z.object({
   FEATURED_PRODUCT_IDS: z
     .string()
     .default('3,5,11,12,18')
+    // "3, 5,11" -> ["3", "5", "11"], then each id is validated; an empty entry fails, so typos surface at startup.
     .transform((list) => list.split(',').map((id) => id.trim()))
     .pipe(z.array(productId).min(1).max(20)),
 

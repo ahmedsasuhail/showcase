@@ -40,6 +40,8 @@ export function EnquiryForm({ productId, onSent }: { productId: string; onSent: 
       onSent();
     } catch (error) {
       setSending(false);
+      // A 400 names the fields the API rejected: show them beside those fields. Anything else
+      // (422 unknown product, 503 email down, network failure) becomes one message above the form.
       if (error instanceof ApiError && error.status === 400) {
         const fromServer: EnquiryErrors = {};
         for (const detail of error.details) if (isField(detail.field)) fromServer[detail.field] = detail.message;

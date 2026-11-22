@@ -9,6 +9,7 @@ export function HomePage() {
   return (
     <>
       <h1>Top rated</h1>
+      <p className="lead">Our five favourites, hand-picked by the team.</p>
       {state.status === 'loading' && <LoadingMessage>Loading top rated products…</LoadingMessage>}
       {state.status === 'error' && (
         <ErrorMessage message="We couldn’t load the top rated products." onRetry={retry} />

@@ -32,6 +32,8 @@ export const enquirySchema = z.strictObject({
     .string()
     .trim()
     .max(30, 'Phone number can be at most 30 characters.')
+    // Deliberately loose: digits plus the usual separators (+ ( ) - . space), 6-30 characters,
+    // so local and international formats both pass. Sales staff read it; nothing dials it.
     .refine((value) => value === '' || /^[0-9+()\-.\s]{6,30}$/.test(value), 'Enter a valid phone number.')
     .transform(emptyAsMissing)
     .optional(),

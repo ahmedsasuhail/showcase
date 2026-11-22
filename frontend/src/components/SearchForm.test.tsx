@@ -28,11 +28,22 @@ describe('SearchForm', () => {
     expect(screen.getByTestId('url')).toHaveTextContent('/search?q=mens%20jacket%20%26%20coat');
   });
 
-  it('does nothing for a blank term', async () => {
+  it('keeps the Search button disabled until a term is entered', async () => {
     renderForm();
+    const button = screen.getByRole('button', { name: 'Search' });
+    expect(button).toBeDisabled();
 
     await userEvent.type(screen.getByRole('searchbox'), '   ');
-    await userEvent.click(screen.getByRole('button', { name: 'Search' }));
+    expect(button).toBeDisabled();
+
+    await userEvent.type(screen.getByRole('searchbox'), 'hat');
+    expect(button).toBeEnabled();
+  });
+
+  it('does nothing when Enter is pressed on a blank term', async () => {
+    renderForm();
+
+    await userEvent.type(screen.getByRole('searchbox'), '   {Enter}');
 
     expect(screen.getByTestId('url')).toHaveTextContent(/^\/$/);
   });

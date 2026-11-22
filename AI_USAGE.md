@@ -11,6 +11,8 @@
 
 I picked the model per step by risk: the cheaper model where the work repeated an established pattern, the stronger one where a subtle mistake would matter most.
 
+This table is the accurate record of which model did what. The `Co-Authored-By` lines in the git history name the model that was active when each commit was made, which is not always the one that wrote it.
+
 ## Instruction files and spec
 - [`AGENTS.md`](AGENTS.md): rules for coding agents (boundaries, scope, when to run checks, git approval).
 - [`PLAN.md`](PLAN.md): the spec agents build from.
@@ -47,7 +49,7 @@ Run from the repo root before every commit; final results:
 |---|---|
 | `npm run lint` | Clean |
 | `npm run typecheck` | Clean (both apps) |
-| `npm test` | Backend 107 passed, frontend 43 passed; no test touches the network. Line coverage about 93% backend, 97% frontend (the gaps are startup wiring, checked by live runs) |
+| `npm test` | Backend 108 passed, frontend 45 passed; no test touches the network. Line coverage about 93% backend, 97% frontend (the gaps are startup wiring, checked by live runs) |
 | `npm run build` | Both apps build |
 | `grep -ri fakestoreapi frontend/src` | Nothing: the frontend never references Fake Store |
 | `docker compose up --build` | No-cache build about 10 s on my machine; all services healthy about 16 s after starting |

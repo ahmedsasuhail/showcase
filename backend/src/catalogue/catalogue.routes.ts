@@ -3,6 +3,8 @@ import { z } from 'zod';
 import type { CatalogueService } from './catalogue.service.js';
 import { normaliseTerm } from './search.js';
 
+// Normalise first, then validate: "   " becomes "" and is rejected, and the 100-character
+// limit applies to the cleaned term. A repeated ?q=a&q=b arrives as an array and fails the string check.
 const searchQuery = z.object({
   q: z
     .string('Enter a search term.')

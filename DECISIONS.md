@@ -14,7 +14,7 @@ Where the acceptance criteria leave gaps.
 | A7 | When to show "Thank you" | Only after the email provider accepts the message. On failure the customer sees an error and keeps what they typed. |
 | A8 | Product images | The browser loads image URLs returned by our API. It never calls the Fake Store **API**. Proxying images adds work with no benefit yet. |
 | A9 | Currency | Fake Store has no currency. Prices show as AUD (configurable). |
-| A10 | Look and feel | Neutral and accessible. Brand colours and fonts live in one CSS file, ready for the creative work. |
+| A10 | Look and feel | Neutral and accessible, with a light polish (cards, a simple header menu, a footer with placeholder contact details) so it reads as a product. Brand colours and fonts live in one CSS file, ready for the creative work. |
 | A11 | IDs | Product IDs are strings in our API, so a future source with non-numeric IDs will not break clients. |
 | A12 | Which 5 products are featured by default | `3,5,11,12,18`: the five highest-rated Fake Store products that together cover all four categories. Change them in `backend/.env`. |
 | A13 | Order of a category's "additional" products | The data source's own order, not re-sorted by rating. "Top rated" is the ranked section; the rest is the catalogue as given. |
