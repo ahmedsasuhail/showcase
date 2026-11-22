@@ -1,7 +1,24 @@
 import type { Category, Product } from '../src/catalogue/product.js';
 import { matchesSearch } from '../src/catalogue/search.js';
 import type { ProductSource } from '../src/catalogue/product-source.js';
-import { ProductSourceUnavailableError } from '../src/errors.js';
+import type { EmailMessage, EmailSender } from '../src/email/email-sender.js';
+import { EmailDeliveryError, ProductSourceUnavailableError } from '../src/errors.js';
+
+/** Keeps every email instead of sending it. */
+export class RecordingEmailSender implements EmailSender {
+  readonly sent: EmailMessage[] = [];
+
+  async send(message: EmailMessage): Promise<void> {
+    this.sent.push(message);
+  }
+}
+
+/** An email provider that is down. */
+export class FailingEmailSender implements EmailSender {
+  async send(): Promise<void> {
+    throw new EmailDeliveryError('simulated SMTP outage');
+  }
+}
 
 /** In-memory stand-in for the real data source. Grows with the ProductSource interface. */
 export class InMemoryProductSource implements ProductSource {

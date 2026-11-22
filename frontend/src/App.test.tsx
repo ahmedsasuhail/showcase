@@ -53,4 +53,29 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Mens Cotton Jacket' })).toBeInTheDocument();
     expect(screen.getByText('Great outerwear.')).toBeInTheDocument();
   });
+
+  it('lets a customer enquire about a product and see "Thank you"', async () => {
+    const posted: unknown[] = [];
+    mockApi({
+      '/api/categories': () => jsonResponse({ items: [] }),
+      '/api/products/3': () => jsonResponse(jacket),
+      '/api/enquiries': (init) => {
+        posted.push(JSON.parse(String(init?.body)));
+        return jsonResponse({ enquiryId: 'ref-1' }, 201);
+      },
+    });
+    render(
+      <MemoryRouter initialEntries={['/products/3']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    await userEvent.click(await screen.findByRole('link', { name: 'Enquire' }));
+    await userEvent.type(await screen.findByLabelText('Name'), 'Ada Lovelace');
+    await userEvent.type(screen.getByLabelText('Email'), 'ada@example.com');
+    await userEvent.click(screen.getByRole('button', { name: 'Send enquiry' }));
+
+    expect(await screen.findByRole('heading', { name: 'Thank you' })).toBeInTheDocument();
+    expect(posted).toEqual([{ productId: '3', name: 'Ada Lovelace', email: 'ada@example.com' }]);
+  });
 });

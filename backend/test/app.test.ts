@@ -3,11 +3,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createApp } from '../src/app.js';
 import { CatalogueService } from '../src/catalogue/catalogue.service.js';
 import type { ProductSource } from '../src/catalogue/product-source.js';
-import { FailingProductSource, InMemoryProductSource } from './fakes.js';
+import { EnquiriesService } from '../src/enquiries/enquiries.service.js';
+import { FailingProductSource, InMemoryProductSource, RecordingEmailSender } from './fakes.js';
 import { makeProduct } from './fixtures.js';
 
-const appWith = (source: ProductSource, featuredProductIds: string[] = []) =>
-  createApp({ catalogue: new CatalogueService(source, { featuredProductIds }) });
+function appWith(source: ProductSource, featuredProductIds: string[] = []) {
+  const catalogue = new CatalogueService(source, { featuredProductIds });
+  const enquiries = new EnquiriesService(catalogue, new RecordingEmailSender(), {
+    salesInbox: 'sales@test.example',
+    from: 'no-reply@test.example',
+  });
+  return createApp({ catalogue, enquiries });
+}
 
 afterEach(() => vi.restoreAllMocks());
 

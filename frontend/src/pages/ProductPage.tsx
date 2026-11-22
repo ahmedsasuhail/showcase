@@ -38,6 +38,9 @@ export function ProductPage() {
           {product.rating !== null && <span>Rated {product.rating} out of 5</span>}
         </p>
         <p>{product.description}</p>
+        <Link to={`/products/${product.id}/enquire`} className="button">
+          Enquire
+        </Link>
       </div>
     </article>
   );
