@@ -81,3 +81,18 @@ describe('FakeStoreProductSource.listProductsInCategory', () => {
     expect(products.map((p) => p.id)).toEqual(['1', '3']);
   });
 });
+
+describe('FakeStoreProductSource.searchProducts', () => {
+  it('returns only products matching every word of the term', async () => {
+    const fetchFn = async () =>
+      jsonResponse([
+        upstreamProduct({ id: 1, title: 'Red Jacket' }),
+        upstreamProduct({ id: 2, title: 'Blue Jacket', description: 'Warm' }),
+        upstreamProduct({ id: 3, title: 'Red Shirt', description: 'Light', category: 'tops' }),
+      ]);
+
+    const found = await sourceWith(fetchFn as typeof fetch).searchProducts('red jacket');
+
+    expect(found.map((p) => p.id)).toEqual(['1']);
+  });
+});

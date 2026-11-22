@@ -1,4 +1,5 @@
 import type { Category, Product } from '../src/catalogue/product.js';
+import { matchesSearch } from '../src/catalogue/search.js';
 import type { ProductSource } from '../src/catalogue/product-source.js';
 import { ProductSourceUnavailableError } from '../src/errors.js';
 
@@ -20,6 +21,10 @@ export class InMemoryProductSource implements ProductSource {
     return ids.flatMap((id) => this.products.find((p) => p.id === id) ?? []);
   }
 
+  async searchProducts(term: string): Promise<Product[]> {
+    return this.products.filter((p) => matchesSearch(p, term));
+  }
+
   async listProductsInCategory(category: Category): Promise<Product[]> {
     return this.products.filter((p) => p.category.slug === category.slug);
   }
@@ -32,6 +37,10 @@ export class FailingProductSource implements ProductSource {
   }
 
   async getProductsByIds(): Promise<Product[]> {
+    throw new ProductSourceUnavailableError('simulated outage');
+  }
+
+  async searchProducts(): Promise<Product[]> {
     throw new ProductSourceUnavailableError('simulated outage');
   }
 

@@ -20,3 +20,8 @@ export interface CategoryProducts {
   topRated: Product[];
   additional: Product[];
 }
+
+export interface SearchResults {
+  query: string;
+  items: Product[];
+}

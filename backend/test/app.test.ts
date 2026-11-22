@@ -46,6 +46,56 @@ describe('GET /api/products/featured', () => {
   });
 });
 
+describe('GET /api/products?q=', () => {
+  const products = [
+    makeProduct({ id: '1', title: 'Red Jacket', description: 'Warm.' }),
+    makeProduct({ id: '2', title: 'Blue Jacket', description: 'Light.' }),
+    makeProduct({ id: '3', title: 'Red Hat', description: 'Cosy.', category: { slug: 'hats', name: 'Hats' } }),
+  ];
+  const app = () => appWith(new InMemoryProductSource({ products }));
+
+  it('returns only the products that match the search term', async () => {
+    const res = await request(app()).get('/api/products').query({ q: 'jacket' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.query).toBe('jacket');
+    expect(res.body.items.map((p: { id: string }) => p.id)).toEqual(['1', '2']);
+  });
+
+  it('requires every word and echoes the cleaned-up term', async () => {
+    const res = await request(app()).get('/api/products').query({ q: '  RED   jacket ' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.query).toBe('RED jacket');
+    expect(res.body.items.map((p: { id: string }) => p.id)).toEqual(['1']);
+  });
+
+  it('returns 200 with no items when nothing matches', async () => {
+    const res = await request(app()).get('/api/products').query({ q: 'laptop' });
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ query: 'laptop', items: [] });
+  });
+
+  it.each([
+    ['is missing', '/api/products'],
+    ['is blank', '/api/products?q=%20%20'],
+    ['is longer than 100 characters', `/api/products?q=${'a'.repeat(101)}`],
+    ['is repeated', '/api/products?q=a&q=b'],
+  ])('returns 400 with the field named when q %s', async (_name, url) => {
+    const res = await request(app()).get(url);
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('invalid_request');
+    expect(res.body.error.details[0].field).toBe('q');
+  });
+
+  it('returns 503 in the standard error shape when the source is down', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await request(appWith(new FailingProductSource())).get('/api/products?q=jacket');
+    expect(res.status).toBe(503);
+    expect(res.body).toEqual(outageResponse);
+  });
+});
+
 describe('GET /api/categories', () => {
   it('returns the categories from the product source', async () => {
     const categories = [{ slug: 'electronics', name: 'Electronics' }];

@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler } from 'express';
+import { ZodError } from 'zod';
 
 /** The product data source could not be reached or returned something unusable. */
 export class ProductSourceUnavailableError extends Error {
@@ -16,11 +17,16 @@ export class NotFoundError extends Error {
   }
 }
 
-export function errorBody(code: string, message: string) {
-  return { error: { code, message } };
+export function errorBody(code: string, message: string, details?: { field: string; message: string }[]) {
+  return { error: { code, message, ...(details && { details }) } };
 }
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+  if (err instanceof ZodError) {
+    const details = err.issues.map((issue) => ({ field: issue.path.join('.'), message: issue.message }));
+    res.status(400).json(errorBody('invalid_request', 'The request was not valid.', details));
+    return;
+  }
   if (err instanceof NotFoundError) {
     res.status(404).json(errorBody('not_found', err.message));
     return;

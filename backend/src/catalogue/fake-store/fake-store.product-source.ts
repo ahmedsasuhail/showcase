@@ -1,6 +1,7 @@
 import { ProductSourceUnavailableError } from '../../errors.js';
 import type { Category, Product } from '../product.js';
 import type { ProductSource } from '../product-source.js';
+import { matchesSearch } from '../search.js';
 import { toCategories, toProducts } from './fake-store.mapper.js';
 
 export interface FakeStoreOptions {
@@ -26,6 +27,10 @@ export class FakeStoreProductSource implements ProductSource {
   async getProductsByIds(ids: readonly string[]): Promise<Product[]> {
     const byId = new Map((await this.listAll()).map((product) => [product.id, product]));
     return ids.flatMap((id) => byId.get(id) ?? []);
+  }
+
+  async searchProducts(term: string): Promise<Product[]> {
+    return (await this.listAll()).filter((product) => matchesSearch(product, term));
   }
 
   async listProductsInCategory(category: Category): Promise<Product[]> {

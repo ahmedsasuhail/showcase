@@ -37,6 +37,10 @@ export class CatalogueService {
     return products;
   }
 
+  search(term: string): Promise<Product[]> {
+    return this.source.searchProducts(term);
+  }
+
   /** A category's highest-rated products first, then the rest. No product appears in both lists. */
   async getCategoryProducts(slug: string): Promise<CategoryProducts> {
     const category = (await this.source.listCategories()).find((c) => c.slug === slug);
