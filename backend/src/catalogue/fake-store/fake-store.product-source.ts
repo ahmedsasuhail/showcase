@@ -28,6 +28,10 @@ export class FakeStoreProductSource implements ProductSource {
     return ids.flatMap((id) => byId.get(id) ?? []);
   }
 
+  async listProductsInCategory(category: Category): Promise<Product[]> {
+    return (await this.listAll()).filter((product) => product.category.slug === category.slug);
+  }
+
   /** The whole catalogue is 20 products, so one request is cheaper than one per product. */
   private async listAll(): Promise<Product[]> {
     return toProducts(await this.get('/products'), this.options.currency);

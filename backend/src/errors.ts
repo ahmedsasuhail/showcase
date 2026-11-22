@@ -8,11 +8,23 @@ export class ProductSourceUnavailableError extends Error {
   }
 }
 
+/** The thing the caller asked for does not exist. The message is safe to show to customers. */
+export class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
 export function errorBody(code: string, message: string) {
   return { error: { code, message } };
 }
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+  if (err instanceof NotFoundError) {
+    res.status(404).json(errorBody('not_found', err.message));
+    return;
+  }
   if (err instanceof ProductSourceUnavailableError) {
     console.warn(`Product source unavailable: ${err.message}`);
     res

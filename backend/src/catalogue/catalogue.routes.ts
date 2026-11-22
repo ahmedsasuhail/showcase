@@ -12,5 +12,9 @@ export function catalogueRoutes(catalogue: CatalogueService): Router {
     res.json({ items: await catalogue.listCategories() });
   });
 
+  router.get('/categories/:slug/products', async (req, res) => {
+    res.json(await catalogue.getCategoryProducts(req.params.slug));
+  });
+
   return router;
 }

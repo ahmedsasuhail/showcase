@@ -62,6 +62,39 @@ describe('GET /api/categories', () => {
   });
 });
 
+describe('GET /api/categories/:slug/products', () => {
+  const electronics = { slug: 'electronics', name: 'Electronics' };
+  const products = ['1', '2', '3', '4', '5'].map((id, i) =>
+    makeProduct({ id, rating: i + 1, category: electronics }),
+  );
+
+  it('returns the category with its top rated products, then the additional ones', async () => {
+    const app = appWith(new InMemoryProductSource({ categories: [electronics], products }));
+
+    const res = await request(app).get('/api/categories/electronics/products');
+
+    expect(res.status).toBe(200);
+    expect(res.body.category).toEqual(electronics);
+    expect(res.body.topRated.map((p: { id: string }) => p.id)).toEqual(['5', '4', '3']);
+    expect(res.body.additional.map((p: { id: string }) => p.id)).toEqual(['1', '2']);
+  });
+
+  it('returns 404 in the standard error shape for an unknown category', async () => {
+    const res = await request(appWith(new InMemoryProductSource({ categories: [electronics] }))).get(
+      '/api/categories/toys/products',
+    );
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: { code: 'not_found', message: 'Category not found.' } });
+  });
+
+  it('returns 503 in the standard error shape when the source is down', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await request(appWith(new FailingProductSource())).get('/api/categories/electronics/products');
+    expect(res.status).toBe(503);
+    expect(res.body).toEqual(outageResponse);
+  });
+});
+
 describe('unknown API routes', () => {
   it('return 404 in the standard error shape', async () => {
     const res = await request(appWith(new InMemoryProductSource())).get('/api/nope');

@@ -1,9 +1,19 @@
+import { NotFoundError } from '../errors.js';
 import type { Category, Product } from './product.js';
 import type { ProductSource } from './product-source.js';
 
 export interface CatalogueOptions {
   featuredProductIds: readonly string[];
 }
+
+export interface CategoryProducts {
+  category: Category;
+  topRated: Product[];
+  additional: Product[];
+}
+
+/** How many of a category's products count as "top rated" (assumption A2). */
+const TOP_RATED_PER_CATEGORY = 3;
 
 export class CatalogueService {
   constructor(
@@ -25,5 +35,19 @@ export class CatalogueService {
       console.warn(`Featured products not found in the product source: ${missing.join(', ')}`);
     }
     return products;
+  }
+
+  /** A category's highest-rated products first, then the rest. No product appears in both lists. */
+  async getCategoryProducts(slug: string): Promise<CategoryProducts> {
+    const category = (await this.source.listCategories()).find((c) => c.slug === slug);
+    if (!category) throw new NotFoundError('Category not found.');
+
+    const products = await this.source.listProductsInCategory(category);
+    // Highest rating first, products without a rating last. Array.sort is stable, so ties keep the source's order.
+    const topRated = [...products]
+      .sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1))
+      .slice(0, TOP_RATED_PER_CATEGORY);
+    const topIds = new Set(topRated.map((p) => p.id));
+    return { category, topRated, additional: products.filter((p) => !topIds.has(p.id)) };
   }
 }

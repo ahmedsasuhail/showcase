@@ -63,3 +63,21 @@ describe('FakeStoreProductSource.getProductsByIds', () => {
     );
   });
 });
+
+describe('FakeStoreProductSource.listProductsInCategory', () => {
+  it('returns only the products in that category, in the source order', async () => {
+    const fetchFn = async () =>
+      jsonResponse([
+        upstreamProduct({ id: 1, category: "men's clothing" }),
+        upstreamProduct({ id: 2, category: 'electronics' }),
+        upstreamProduct({ id: 3, category: "men's clothing" }),
+      ]);
+
+    const products = await sourceWith(fetchFn as typeof fetch).listProductsInCategory({
+      slug: 'mens-clothing',
+      name: "Men's clothing",
+    });
+
+    expect(products.map((p) => p.id)).toEqual(['1', '3']);
+  });
+});

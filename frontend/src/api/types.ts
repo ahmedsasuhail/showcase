@@ -14,3 +14,9 @@ export interface Product {
   rating: number | null;
   category: Category;
 }
+
+export interface CategoryProducts {
+  category: Category;
+  topRated: Product[];
+  additional: Product[];
+}
