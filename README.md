@@ -34,17 +34,17 @@ flowchart LR
 ```
 
 ## Getting started
-*To be verified after the build.* Planned:
-
 ### With Docker (recommended)
-One command starts the frontend, the backend and the email inbox:
+Needs Docker with Compose. One command starts the frontend, the backend and the email inbox:
 ```sh
 docker compose up --build
 ```
 - App: http://localhost:8080
-- Sales inbox (Mailpit): http://localhost:8025
+- Sales inbox (Mailpit): http://localhost:8025. Enquiry emails arrive here.
 
-No configuration needed; defaults work locally. To change settings (featured products, sales inbox address), copy `backend/.env.example` to `backend/.env` and edit it. The frontend has no settings: it only calls `/api` on its own origin.
+It uses host ports 8080, 8025 and 1025; if one is taken, stop whatever is using it. Stop everything with `docker compose down`.
+
+No configuration needed; defaults work locally. To change settings (featured products, sales inbox address), copy `backend/.env.example` to `backend/.env` and edit it, then run the command again. The frontend has no settings: it only calls `/api` on its own origin.
 
 ### Without Docker (for development)
 Needs Node.js 24 (`.nvmrc`). Run everything from the repo root (the folder with the root `package.json`). Install once, then run each of the other three commands in its own terminal:

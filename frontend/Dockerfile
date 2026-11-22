@@ -1,0 +1,15 @@
+# Build context is the repo root (npm workspaces share one lockfile): docker compose handles this.
+
+FROM node:24-alpine AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY backend/package.json backend/
+COPY frontend/package.json frontend/
+RUN npm ci --workspace frontend
+COPY frontend frontend
+RUN npm run build -w frontend
+
+FROM nginx:1.29-alpine
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/frontend/dist /usr/share/nginx/html
+EXPOSE 80
