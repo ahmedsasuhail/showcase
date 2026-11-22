@@ -36,10 +36,8 @@ const schema = z.object({
   SALES_INBOX_EMAIL: z.email().default('sales@example.com'),
 });
 
-export type Config = z.infer<typeof schema>;
-
 /** Reads and validates environment variables. Throws one readable error so the app fails fast at startup. */
-export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
+export function loadConfig(env: NodeJS.ProcessEnv = process.env): z.infer<typeof schema> {
   const result = schema.safeParse(env);
   if (!result.success) {
     const problems = result.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`);

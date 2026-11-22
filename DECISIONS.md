@@ -16,6 +16,10 @@ Where the acceptance criteria leave gaps.
 | A9 | Currency | Fake Store has no currency. Prices show as AUD (configurable). |
 | A10 | Look and feel | Neutral and accessible. Brand colours and fonts live in one CSS file, ready for the creative work. |
 | A11 | IDs | Product IDs are strings in our API, so a future source with non-numeric IDs will not break clients. |
+| A12 | Which 5 products are featured by default | `3,5,11,12,18`: the five highest-rated Fake Store products that together cover all four categories. Change them in `backend/.env`. |
+| A13 | Order of a category's "additional" products | The data source's own order, not re-sorted by rating. "Top rated" is the ranked section; the rest is the catalogue as given. |
+| A14 | What "text matching" means in search | Plain text, part of a word counts (`jack` finds "Jacket"). Punctuation is matched literally, so a search for `(` finds products whose description contains one. |
+| A15 | Enquiry about a product that no longer exists | Rejected with 422 and a clear message; no email is sent. The form lives on its own page (`/products/:id/enquire`) so it can be linked to and focus can be managed. |
 
 ## Dropped or simplified
 
@@ -25,7 +29,7 @@ Where the acceptance criteria leave gaps.
 | Storing enquiries, queues, retries | Not built; the email is the record | Low volume. A synchronous send keeps the "Thank you" honest. |
 | Rate limiting the enquiry endpoint | Not built | Not needed for a local PoC. First thing to add before going public (see Next). |
 | Caching Fake Store responses | Not built | 20 products and a local demo. Easy to add inside the adapter without touching anything else. |
-| OpenAPI / Swagger | Not built; API table in README | Seven endpoints. The table is enough for now. |
+| OpenAPI / Swagger | Not built; API table in PLAN.md | Seven endpoints. The table is enough for now. |
 | Pagination, sorting, filters | Not built | 20 products. List responses use `{ items }`, so paging can be added without breaking clients. |
 | Browser end-to-end tests, CI | Not built | API and component tests cover each criterion more cheaply. |
 | Auth, cart, checkout, cloud deployment | Not built | Not in the brief. The brief asks for AWS *compatibility*, not deployment. |
@@ -40,6 +44,9 @@ Where the acceptance criteria leave gaps.
 | D4 | `EmailSender` interface; SMTP via nodemailer; Mailpit locally | The provider will change. No accounts needed. Amazon SES accepts SMTP. | One extra container locally. |
 | D5 | Browser calls only relative `/api` (Vite proxy in dev, nginx in Docker) | No CORS. Same pattern as CloudFront path routing later. | Small nginx config. |
 | D6 | Docker Compose for the reviewer run | One command, no local Node needed. Images run on AWS ECS. | Docker required for the easy path. |
+| D7 | Validate with zod at the edge; the browser repeats the checks with the same messages | One rule set the API enforces; customers still get instant feedback. Unknown fields rejected, enquiry body capped at 10 KB. | Messages are duplicated in two places. |
+| D8 | One error shape, `{ error: { code, message, details? } }`, from domain errors | Services throw domain errors (not found, source down, email failed); one handler maps them to 400/404/422/503. Adapters never know about HTTP. | A small mapping table in `errors.ts`. |
+| D9 | Node.js 24 LTS | What the development machine and the Docker images run. | None for this scope. |
 
 ## Growing beyond the PoC
 - **New data source** (PIM, database, search engine): write one adapter implementing `ProductSource` and change one line in `server.ts`. API, services and UI stay the same. Search is part of the interface, so a real search engine can take it over.
@@ -49,6 +56,8 @@ Where the acceptance criteria leave gaps.
 
 ## What I would do with one more day
 - Rate limit and a bot check on enquiries.
+- A short cache in the Fake Store adapter: today every request reads the whole 20-product catalogue upstream.
+- Accessibility polish: a page title per page, and moving focus to the new page's heading after navigation.
 - Persist enquiries and send through a queue (SQS + dead-letter queue) so a provider outage loses nothing.
 - Playwright smoke tests for the five journeys, run in CI.
 - Generate frontend types from an OpenAPI document.

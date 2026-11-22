@@ -1,6 +1,6 @@
 # Product Catalogue PoC
 
-> **Status: in progress.** The plan is in place; the application is being built. Setup steps below will be verified once it exists.
+> **Status: proof of concept complete.** All five acceptance criteria work end to end; every command below has been run.
 
 A proof of concept for a product catalogue. Customers browse and search products and send an enquiry about one. It is built as a foundation that keeps working when the product data source, the look and feel and the email provider change.
 
@@ -56,22 +56,33 @@ npm run dev -w frontend       # app on http://localhost:5173, forwards /api to t
 ```
 On Windows PowerShell, if `npm` is blocked by the execution policy, use `npm.cmd`, Command Prompt or Git Bash.
 
-### Tests
+### Tests and checks
 ```sh
-npm test
+npm test            # backend and frontend; no test touches the network
+npm run lint
+npm run typecheck
+npm run build
 ```
 
-## API
-See [PLAN.md](PLAN.md#api).
+## Where things live
+| To change... | Edit |
+|---|---|
+| The product data source | Write a class implementing `ProductSource` (`backend/src/catalogue/product-source.ts`) and use it in `backend/src/server.ts` |
+| The email provider | Write a class implementing `EmailSender` (`backend/src/email/email-sender.ts`), or point the SMTP settings at Amazon SES |
+| The look and feel | `frontend/src/theme.css` (colours, fonts, spacing) |
+| The featured products | `FEATURED_PRODUCT_IDS` in `backend/.env` |
+| The search rule | `backend/src/catalogue/search.ts` |
+
+Full structure and API contract: [PLAN.md](PLAN.md#structure).
 
 ## Time spent
 | Phase | Minutes |
 |---|---:|
-| Planning | 35–40 |
-| Building | |
-| Testing | |
-| Reviewing | |
-| **Total** | |
+| Planning (first plan 35–40, scoping review 15–20) | 50–60 |
+| Building | 70–75 |
+| Testing | 10–15 |
+| Reviewing | 20–25 |
+| **Total** | **150–175** |
 
 ## Documents
 | File | Purpose |
