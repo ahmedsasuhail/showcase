@@ -1,11 +1,13 @@
 import { ProductSourceUnavailableError } from '../../errors.js';
-import type { Category } from '../product.js';
+import type { Category, Product } from '../product.js';
 import type { ProductSource } from '../product-source.js';
-import { toCategories } from './fake-store.mapper.js';
+import { toCategories, toProducts } from './fake-store.mapper.js';
 
 export interface FakeStoreOptions {
   baseUrl: string;
   timeoutMs: number;
+  /** Fake Store has no currency, so the business states it (assumption A9). */
+  currency: string;
   /** Injected so tests never touch the network. */
   fetchFn?: typeof fetch;
 }
@@ -19,6 +21,16 @@ export class FakeStoreProductSource implements ProductSource {
 
   async listCategories(): Promise<Category[]> {
     return toCategories(await this.get('/products/categories'));
+  }
+
+  async getProductsByIds(ids: readonly string[]): Promise<Product[]> {
+    const byId = new Map((await this.listAll()).map((product) => [product.id, product]));
+    return ids.flatMap((id) => byId.get(id) ?? []);
+  }
+
+  /** The whole catalogue is 20 products, so one request is cheaper than one per product. */
+  private async listAll(): Promise<Product[]> {
+    return toProducts(await this.get('/products'), this.options.currency);
   }
 
   /** Every upstream failure (network, timeout, non-2xx, bad JSON) becomes one domain error. */

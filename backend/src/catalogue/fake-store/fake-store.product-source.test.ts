@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
+import { upstreamProduct } from '../../../test/fixtures.js';
 import { ProductSourceUnavailableError } from '../../errors.js';
 import { FakeStoreProductSource } from './fake-store.product-source.js';
 
 function sourceWith(fetchFn: typeof fetch) {
-  return new FakeStoreProductSource({ baseUrl: 'https://fake.test', timeoutMs: 1000, fetchFn });
+  return new FakeStoreProductSource({ baseUrl: 'https://fake.test', timeoutMs: 1000, currency: 'AUD', fetchFn });
 }
 
 const jsonResponse = (body: unknown, status = 200) =>
@@ -36,6 +37,28 @@ describe('FakeStoreProductSource.listCategories', () => {
     ['unexpected shape', async () => jsonResponse({ not: 'a list' })],
   ])('throws ProductSourceUnavailableError on %s', async (_name, fetchFn) => {
     await expect(sourceWith(fetchFn as typeof fetch).listCategories()).rejects.toBeInstanceOf(
+      ProductSourceUnavailableError,
+    );
+  });
+});
+
+describe('FakeStoreProductSource.getProductsByIds', () => {
+  const catalogue = [upstreamProduct({ id: 1 }), upstreamProduct({ id: 2 }), upstreamProduct({ id: 3 }), { id: 4 }];
+
+  it('returns the products in the order requested, skipping unknown IDs and unusable records', async () => {
+    const fetchFn = vi.fn<typeof fetch>(async () => jsonResponse(catalogue));
+
+    const products = await sourceWith(fetchFn).getProductsByIds(['3', '999', '1', '4']);
+
+    expect(products.map((p) => p.id)).toEqual(['3', '1']);
+    expect(products[0]?.currency).toBe('AUD');
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(String(fetchFn.mock.calls[0]?.[0])).toBe('https://fake.test/products');
+  });
+
+  it('throws ProductSourceUnavailableError when the catalogue cannot be loaded', async () => {
+    const fetchFn = async () => jsonResponse({}, 503);
+    await expect(sourceWith(fetchFn as typeof fetch).getProductsByIds(['1'])).rejects.toBeInstanceOf(
       ProductSourceUnavailableError,
     );
   });

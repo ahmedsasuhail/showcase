@@ -1,9 +1,21 @@
 import { z } from 'zod';
 
+const productId = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/, 'must contain only letters, digits, - or _');
+
 const schema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   FAKE_STORE_BASE_URL: z.url().default('https://fakestoreapi.com'),
   FAKE_STORE_TIMEOUT_MS: z.coerce.number().int().min(500).max(30_000).default(5000),
+  CATALOGUE_CURRENCY: z
+    .string()
+    .regex(/^[A-Z]{3}$/, 'must be a 3-letter ISO 4217 code such as AUD')
+    .default('AUD'),
+  /** The products the business has chosen as "top rated", shown on the home page in this order. */
+  FEATURED_PRODUCT_IDS: z
+    .string()
+    .default('3,5,11,12,18')
+    .transform((list) => list.split(',').map((id) => id.trim()))
+    .pipe(z.array(productId).min(1).max(20)),
 });
 
 export type Config = z.infer<typeof schema>;

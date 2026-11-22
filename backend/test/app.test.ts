@@ -4,10 +4,19 @@ import { createApp } from '../src/app.js';
 import { CatalogueService } from '../src/catalogue/catalogue.service.js';
 import type { ProductSource } from '../src/catalogue/product-source.js';
 import { FailingProductSource, InMemoryProductSource } from './fakes.js';
+import { makeProduct } from './fixtures.js';
 
-const appWith = (source: ProductSource) => createApp({ catalogue: new CatalogueService(source) });
+const appWith = (source: ProductSource, featuredProductIds: string[] = []) =>
+  createApp({ catalogue: new CatalogueService(source, { featuredProductIds }) });
 
 afterEach(() => vi.restoreAllMocks());
+
+const outageResponse = {
+  error: {
+    code: 'product_source_unavailable',
+    message: 'The catalogue is temporarily unavailable. Please try again.',
+  },
+};
 
 describe('GET /api/health', () => {
   it('reports ok', async () => {
@@ -17,10 +26,30 @@ describe('GET /api/health', () => {
   });
 });
 
+describe('GET /api/products/featured', () => {
+  it('returns the 5 chosen products, in the chosen order, with our product shape', async () => {
+    const products = ['1', '2', '3', '4', '5', '6'].map((id) => makeProduct({ id, title: `Product ${id}` }));
+    const app = appWith(new InMemoryProductSource({ products }), ['5', '2', '6', '1', '3']);
+
+    const res = await request(app).get('/api/products/featured');
+
+    expect(res.status).toBe(200);
+    expect(res.body.items.map((p: { id: string }) => p.id)).toEqual(['5', '2', '6', '1', '3']);
+    expect(res.body.items[0]).toEqual(products[4]);
+  });
+
+  it('returns 503 in the standard error shape when the source is down', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await request(appWith(new FailingProductSource(), ['1'])).get('/api/products/featured');
+    expect(res.status).toBe(503);
+    expect(res.body).toEqual(outageResponse);
+  });
+});
+
 describe('GET /api/categories', () => {
   it('returns the categories from the product source', async () => {
     const categories = [{ slug: 'electronics', name: 'Electronics' }];
-    const res = await request(appWith(new InMemoryProductSource(categories))).get('/api/categories');
+    const res = await request(appWith(new InMemoryProductSource({ categories }))).get('/api/categories');
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ items: categories });
   });
@@ -29,12 +58,7 @@ describe('GET /api/categories', () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const res = await request(appWith(new FailingProductSource())).get('/api/categories');
     expect(res.status).toBe(503);
-    expect(res.body).toEqual({
-      error: {
-        code: 'product_source_unavailable',
-        message: 'The catalogue is temporarily unavailable. Please try again.',
-      },
-    });
+    expect(res.body).toEqual(outageResponse);
   });
 });
 

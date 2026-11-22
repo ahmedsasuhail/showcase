@@ -8,8 +8,10 @@ const config = loadConfig();
 const productSource = new FakeStoreProductSource({
   baseUrl: config.FAKE_STORE_BASE_URL,
   timeoutMs: config.FAKE_STORE_TIMEOUT_MS,
+  currency: config.CATALOGUE_CURRENCY,
 });
-const app = createApp({ catalogue: new CatalogueService(productSource) });
+const catalogue = new CatalogueService(productSource, { featuredProductIds: config.FEATURED_PRODUCT_IDS });
+const app = createApp({ catalogue });
 
 const server = app.listen(config.PORT, () => {
   console.log(`API listening on port ${config.PORT}`);
