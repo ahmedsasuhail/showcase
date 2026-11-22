@@ -5,7 +5,7 @@
 |---|---|---|---|
 | Planning | Claude (Opus 5.5) | High | Analysing the brief, first plan, decisions, agent instructions |
 | Scoping review | Claude Code (Opus 5.5) | Medium | Reviewing the first plan against the brief and cutting it down |
-| Building | *To fill in* | | |
+| Building | Claude Code (Sonnet 5.5) | High | Implementing each step of PLAN.md with its tests |
 | Reviewing | *To fill in* | | |
 
 ## Instruction files and spec
@@ -27,6 +27,7 @@
 | 2 | **Too much process.** A private task board, 10 tickets, 6 approval gates, a commit per ticket and a 1,086-line master plan. Very organised, but built for a team on a multi-week project. | Flagged in the scoping review. For one person on a 3-hour task, keeping a board up to date costs more time than the work it tracks. | I dropped the board entirely. Progress is tracked as one commit per feature, plus a checklist in the draft PR, which reviewers can actually see. |
 | 3 | **Category "top rated" built from the home page picks.** The 5 products hand-picked for the home page were reused for category pages: a category's "top rated" section showed only the picks that happened to belong to it. Five picks over four categories means one or two top-rated products per category, or none if the picks are not spread out. | Flagged in the scoping review I ran. I checked it against Fake Store's category sizes before accepting it. | Each category now shows its 3 highest-rated products, from the rating Fake Store already provides (DECISIONS.md A2). The home page still uses the hand-picked 5. |
 | 4 | **`202 Accepted` for the enquiry endpoint.** 202 means "received, will be processed later", but the email is sent before we respond. | Flagged in the scoping review I ran. | Changed to `201`. |
+| 5 | **Node 26 as the runtime.** The plan and `.nvmrc` named Node 26 as the LTS to use. | The toolchain check at the start of the build: `node -v` on my machine reported 24.2. | Switched `.nvmrc` and the README to Node 24 (LTS), which is what actually runs here. Lesson: the plan was written from the AI's knowledge, not from the environment it would run in. |
 
 ## Course corrections
 - **Checks per commit, not per edit.** The agent was set to run lint, typecheck, tests and build after every change. I made full checks mandatory once per commit (each commit = code + tests + passing checks), and mid-step only for core or large changes. Same bar for what gets committed, a fraction of the time and tokens.

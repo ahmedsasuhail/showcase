@@ -47,13 +47,14 @@ docker compose up --build
 No configuration needed; defaults work locally. To change settings (featured products, sales inbox address), copy `backend/.env.example` to `backend/.env` and edit it. The frontend has no settings: it only calls `/api` on its own origin.
 
 ### Without Docker (for development)
-Needs Node.js 26 (`.nvmrc`). From the repo root, install once, then run each of the other three commands in its own terminal:
+Needs Node.js 24 (`.nvmrc`). Run everything from the repo root (the folder with the root `package.json`). Install once, then run each of the other three commands in its own terminal:
 ```sh
 npm install
 docker compose up mailpit     # email inbox only
 npm run dev -w backend        # API on http://localhost:3000
 npm run dev -w frontend       # app on http://localhost:5173, forwards /api to the backend
 ```
+On Windows PowerShell, if `npm` is blocked by the execution policy, use `npm.cmd`, Command Prompt or Git Bash.
 
 ### Tests
 ```sh
