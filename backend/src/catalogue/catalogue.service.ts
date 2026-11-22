@@ -37,6 +37,12 @@ export class CatalogueService {
     return products;
   }
 
+  async getProduct(id: string): Promise<Product> {
+    const product = await this.source.getProduct(id);
+    if (!product) throw new NotFoundError('Product not found.');
+    return product;
+  }
+
   search(term: string): Promise<Product[]> {
     return this.source.searchProducts(term);
   }

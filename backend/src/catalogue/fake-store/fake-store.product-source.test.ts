@@ -96,3 +96,19 @@ describe('FakeStoreProductSource.searchProducts', () => {
     expect(found.map((p) => p.id)).toEqual(['1']);
   });
 });
+
+describe('FakeStoreProductSource.getProduct', () => {
+  const catalogue = [upstreamProduct({ id: 1 }), upstreamProduct({ id: 2, title: 'Second' }), { id: 3 }];
+
+  it('returns the product with that ID', async () => {
+    const fetchFn = async () => jsonResponse(catalogue);
+    const product = await sourceWith(fetchFn as typeof fetch).getProduct('2');
+    expect(product?.title).toBe('Second');
+  });
+
+  it('returns null for an unknown ID, and for a record that could not be mapped', async () => {
+    const source = sourceWith((async () => jsonResponse(catalogue)) as typeof fetch);
+    expect(await source.getProduct('999')).toBeNull();
+    expect(await source.getProduct('3')).toBeNull();
+  });
+});

@@ -46,6 +46,36 @@ describe('GET /api/products/featured', () => {
   });
 });
 
+describe('GET /api/products/:id', () => {
+  const product = makeProduct({ id: '42', title: 'Answer Jacket' });
+  const app = () => appWith(new InMemoryProductSource({ products: [product] }), ['42']);
+
+  it('returns the product details', async () => {
+    const res = await request(app()).get('/api/products/42');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(product);
+  });
+
+  it('returns 404 in the standard error shape for an unknown product', async () => {
+    const res = await request(app()).get('/api/products/999');
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: { code: 'not_found', message: 'Product not found.' } });
+  });
+
+  it('does not mistake the featured route for a product id', async () => {
+    const res = await request(app()).get('/api/products/featured');
+    expect(res.status).toBe(200);
+    expect(res.body.items).toEqual([product]);
+  });
+
+  it('returns 503 in the standard error shape when the source is down', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const res = await request(appWith(new FailingProductSource())).get('/api/products/42');
+    expect(res.status).toBe(503);
+    expect(res.body).toEqual(outageResponse);
+  });
+});
+
 describe('GET /api/products?q=', () => {
   const products = [
     makeProduct({ id: '1', title: 'Red Jacket', description: 'Warm.' }),

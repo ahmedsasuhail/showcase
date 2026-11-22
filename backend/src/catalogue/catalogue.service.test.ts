@@ -79,3 +79,13 @@ describe('CatalogueService.getCategoryProducts', () => {
     await expect(serviceFor([]).getCategoryProducts('toys')).rejects.toBeInstanceOf(NotFoundError);
   });
 });
+
+describe('CatalogueService.getProduct', () => {
+  it('returns the product', async () => {
+    expect((await serviceWith([]).getProduct('2')).title).toBe('Product 2');
+  });
+
+  it('throws NotFoundError for an unknown product', async () => {
+    await expect(serviceWith([]).getProduct('999')).rejects.toBeInstanceOf(NotFoundError);
+  });
+});

@@ -6,6 +6,8 @@ import type { Category, Product } from './product.js';
  */
 export interface ProductSource {
   listCategories(): Promise<Category[]>;
+  /** One product, or null if the source has no product with that ID. */
+  getProduct(id: string): Promise<Product | null>;
   /** Products for the given IDs, in the order requested. Unknown IDs are skipped. */
   getProductsByIds(ids: readonly string[]): Promise<Product[]>;
   /**

@@ -24,6 +24,10 @@ export class FakeStoreProductSource implements ProductSource {
     return toCategories(await this.get('/products/categories'));
   }
 
+  async getProduct(id: string): Promise<Product | null> {
+    return (await this.listAll()).find((product) => product.id === id) ?? null;
+  }
+
   async getProductsByIds(ids: readonly string[]): Promise<Product[]> {
     const byId = new Map((await this.listAll()).map((product) => [product.id, product]));
     return ids.flatMap((id) => byId.get(id) ?? []);

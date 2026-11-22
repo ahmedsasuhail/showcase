@@ -17,6 +17,10 @@ export class InMemoryProductSource implements ProductSource {
     return this.categories;
   }
 
+  async getProduct(id: string): Promise<Product | null> {
+    return this.products.find((p) => p.id === id) ?? null;
+  }
+
   async getProductsByIds(ids: readonly string[]): Promise<Product[]> {
     return ids.flatMap((id) => this.products.find((p) => p.id === id) ?? []);
   }
@@ -33,6 +37,10 @@ export class InMemoryProductSource implements ProductSource {
 /** A data source that is down. */
 export class FailingProductSource implements ProductSource {
   async listCategories(): Promise<Category[]> {
+    throw new ProductSourceUnavailableError('simulated outage');
+  }
+
+  async getProduct(): Promise<Product | null> {
     throw new ProductSourceUnavailableError('simulated outage');
   }
 

@@ -16,6 +16,13 @@ const jacket = {
   category: { slug: 'mens-clothing', name: "Men's clothing" },
 };
 
+const renderApp = () =>
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <App />
+    </MemoryRouter>,
+  );
+
 describe('App', () => {
   it('lets a customer search from the header and see only the matching products', async () => {
     mockApi({
@@ -24,16 +31,26 @@ describe('App', () => {
       '/api/products?q=cotton%20jacket': () => jsonResponse({ query: 'cotton jacket', items: [jacket] }),
     });
 
-    render(
-      <MemoryRouter initialEntries={['/']}>
-        <App />
-      </MemoryRouter>,
-    );
+    renderApp();
     await userEvent.type(screen.getByRole('searchbox', { name: 'Search products' }), 'cotton jacket');
     await userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Results for “cotton jacket”' })).toBeInTheDocument();
     expect(await screen.findByRole('link', { name: /Mens Cotton Jacket/ })).toHaveAttribute('href', '/products/3');
     expect(screen.getByText('1 product found')).toBeInTheDocument();
+  });
+
+  it('opens the product details page when a customer clicks a product tile', async () => {
+    mockApi({
+      '/api/categories': () => jsonResponse({ items: [] }),
+      '/api/products/featured': () => jsonResponse({ items: [jacket] }),
+      '/api/products/3': () => jsonResponse(jacket),
+    });
+
+    renderApp();
+    await userEvent.click(await screen.findByRole('link', { name: /Mens Cotton Jacket/ }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mens Cotton Jacket' })).toBeInTheDocument();
+    expect(screen.getByText('Great outerwear.')).toBeInTheDocument();
   });
 });

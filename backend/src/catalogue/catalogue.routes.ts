@@ -22,6 +22,11 @@ export function catalogueRoutes(catalogue: CatalogueService): Router {
     res.json({ query: q, items: await catalogue.search(q) });
   });
 
+  // Must stay after /products/featured, or "featured" would be treated as an id.
+  router.get('/products/:id', async (req, res) => {
+    res.json(await catalogue.getProduct(req.params.id));
+  });
+
   router.get('/categories', async (_req, res) => {
     res.json({ items: await catalogue.listCategories() });
   });
