@@ -27,9 +27,11 @@ backend/src/
     product-source.ts   ProductSource interface (the port)
     catalogue.service.ts featured, category split, search, lookup
     catalogue.routes.ts
+    search.ts           the search rule (every word must match)
     fake-store/         adapter + mapper; the only code that knows Fake Store
   enquiries/
     enquiry.schema.ts   zod schema for the request
+    enquiry-email.ts    builds the plain-text email to the sales inbox
     enquiries.service.ts
     enquiries.routes.ts
   email/
@@ -52,7 +54,7 @@ Dependencies flow inwards: routes → services → interfaces. Only `server.ts` 
 | `GET /api/products/:id` | `Product` | 404, 503 |
 | `GET /api/categories` | `{ items: Category[] }` | 503 |
 | `GET /api/categories/:slug/products` | `{ category, topRated, additional }` | 404, 503 |
-| `POST /api/enquiries` `{ productId, name, email, phone?, message? }` | `201 { enquiryId }` | 400, 422, 503 |
+| `POST /api/enquiries` `{ productId, name, email, phone?, message? }` | `201 { enquiryId }` | 400, 413 (body over 10 KB), 422, 503 |
 
 `Product = { id: string, title, description, price, currency, imageUrl, rating: number \| null, category: { slug, name } }`
 

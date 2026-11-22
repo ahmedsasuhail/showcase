@@ -1,0 +1,41 @@
+# One command for the whole system:  docker compose up --build
+#   App:                http://localhost:8080
+#   Sales inbox (mail): http://localhost:8025
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    # Optional overrides (featured products, sales inbox, ...): copy backend/.env.example to backend/.env.
+    env_file:
+      - path: backend/.env
+        required: false
+    environment:
+      # Inside Compose the mail server is the mailpit service, whatever .env says.
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+    depends_on:
+      - mailpit
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  # Catches every email the backend sends, so no real mail account is needed.
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "8025:8025" # web inbox
+      - "1025:1025" # SMTP, so `npm run dev -w backend` can use it too
